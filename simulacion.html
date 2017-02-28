@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simulacion</title>
+    <script src="math.min.js" type="text/javascript"></script>
+  </head>
+  <style type="text/css">
+    table {
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+  </style>
+  <body>
+    <h1>Simulacion - Segunda Unidad</h1>
+    <h2>Numeros pseudoaleatorios</h2>
+    <p>Selecciona el tipo de algoritmo que deseas utilizar para generar numeros pseudoaleatorios</p>
+    <div id="menu">
+      <select id="type" autocomplete="off">
+        <option value="none">*SELECT*</option>
+        <option value="square">Cuadrados medios</option>
+        <option value="product">Productos medios</option>
+        <option value="congruencial">Congurencial mixto</option>
+      </select>
+    </div>
+    <div id="algorithm">
+    </div>
+    <script>
+    /* You dont need JQUERY */
+      // Validates integer numbers
+      function isNumberKey(evt){
+        let charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+          return false;
+        return true;
+      }
+      // Trigger that calls the differents forms of algorithms
+      const type = document.querySelector('#type');
+      const alghorithm = document.querySelector('#algorithm');
+      type.addEventListener('change', evt => {
+        const value = evt.target.value;
+        algorithm.innerHTML = getForm(value);
+      });
+      // This function return the algorithms forms
+      function getForm(type){
+        const algorithms = {
+          'square': '<h3>Cuadrados medios</h3><span>Ingresa la semilla base</span><input id="firstSeed" type="number" onkeypress="return isNumberKey(event)"></input><button onclick="middleSquare()">Generar</button><div id="result"></div>',
+          'product': '<h3>Productos medios</h3><span>Ingresa la semilla base</span><input id="firstSeed" type="number" onkeypress="return isNumberKey(event)"></input><span>Ingresa la segunda semilla base</span><input id="secondSeed" type="number" onkeypress="return isNumberKey(event)"></input><button onclick="middleSquare()">Generar</button><div id="result"></div>',
+          'congruencial': '<h3>Congruencial mixto</h3><p>De acuerdo a la formula "Xn + 1 = (aXn + c)" mod m ingresa los datos</p><span>x</span><input id="x" type="number"><span>a</span><input id="a" type="number"><span>c</span><input id="c" type="number"><span>mod</span><input id="mod" type="number"><button onclick="mixedCongruential()">Generar</button><div id="result"></div>',
+          'default': ''
+        };
+        return (algorithms[type] || algorithms['default']);
+      }
+      // get the 4 middle digits
+      function seedPosition(seed){
+        const seedLength = (seed.toString().length - 4) / 2; // No matter if the division have decimals
+        const getSeed = seed.toString().substring(seedLength, seedLength+4);
+        return getSeed;
+      }
+      // MiddleSquares
+      function middleSquare(){
+        let seed = document.querySelector('#firstSeed').value;
+        let array = new Array(10);
+        for (var i = 0; i < 10; i++){
+          let seedElevated = Math.pow(seed, 2);
+          let newSeed = seedPosition(seedElevated);
+          array.push({seed, seedElevated, newSeed});
+          seed = newSeed;
+        }
+        let html = "<table><tr><th>Semilla</th><th>Semilla elevada</th><th>Nueva semilla</th><th>Numero aleatorio</th></tr>";
+        array.forEach(seeds => {
+          html += `<tr><td>${seeds.seed}</td><td>${seeds.seedElevated}</td><td>${seeds.newSeed}</td><td>.${seeds.newSeed}</td></tr>`;
+        });
+        html += "</table>";
+        document.querySelector('#result').innerHTML = html;
+      }
+      // MiddleProducts
+      function middleProduct(){
+        let firstSeed = document.querySelector('#firstSeed').value;
+        let secondSeed = document.querySelector('#secondSeed').value;
+        let array = new Array(10);
+        for (var i = 0; i < 10; i++){
+          let seedProduct = firstSeed * secondSeed;
+          let newSeed = seedPosition(seedProduct);
+          array.push({firstSeed, secondSeed, seedProduct, newSeed});
+          firstSeed = secondSeed;
+          secondSeed = newSeed;
+        }
+        let html = "<table><tr><th>Primera semilla</th><th>Segunda semilla</th><th>Producto</th><th>Nueva semilla</th><th>Numero aleatorio</th></tr>";
+        array.forEach(seeds => {
+          html += `<tr><td>${seeds.firstSeed}</td><td>${seeds.secondSeed}</td><td>${seeds.seedProduct}</td><td>${seeds.newSeed}</td><td>.${seeds.newSeed}</td></tr>`;
+        });
+        html += "</table>";
+        document.querySelector('#result').innerHTML = html;
+      }
+
+      function isEqual(fraction, x){
+        return fraction.n == x ? true : false;
+      }
+      // mixedCongruentials
+      function mixedCongruential(){
+        let x = document.querySelector('#x').value;
+        let a = document.querySelector('#a').value;
+        let c = document.querySelector('#c').value;
+        let m = document.querySelector('#mod').value;
+        array = new Array(10);
+        for (var i = 0; i < 10; i++){
+          let equationString = `((${a} * ${x}) + ${c}) mod ${m}`;
+          let sum = ((a * x) + parseInt(c));
+          let integerPart = Math.floor(sum/m);
+          let decimals = (sum / m) % 1;
+          let fraction = math.fraction(decimals);
+          if(isEqual(fraction, x)){
+            fraction.n = fraction.n * 2;
+            fraction.d = fraction.d * 2;
+          }
+          let divisionString = `${sum}/${m} = ${integerPart} + ${fraction.n}/${fraction.d}`;
+          let decimalString = `${fraction.n}/${fraction.d} = ${decimals}`;
+          x = fraction.n;
+          array.push({equationString, divisionString, x, decimalString});
+        }
+        let html = "<table><tr><th>Generador</th><th>Division</th><th>Xi</th><th>Numero aleatorio</th></tr>";
+        array.forEach( generator => {
+          html += `<tr><td>${generator.equationString}</td><td>${generator.divisionString}</td><td>${generator.x}</td><td>${generator.decimalString}</td></tr>`;
+        });
+        html += "</table>";
+        document.querySelector('#result').innerHTML = html;
+      }
+    </script>
+  </body>
+</html>
